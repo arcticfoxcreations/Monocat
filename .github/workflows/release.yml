@@ -1,0 +1,73 @@
+# Builds the two downloads for a release: the portable zip and the Windows Setup.
+# Start it by pushing a tag such as v1.0.0, or run it by hand from the Actions tab.
+# Nothing here signs the files. See README, "Windows SmartScreen", for what that means.
+name: release
+on:
+  push:
+    tags: ["v*"]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Read the version
+        shell: bash
+        run: |
+          V=$(python -c "import re;print(re.search(r'APP_VERSION\s*=\s*\"([^\"]+)\"', open('app/__init__.py').read()).group(1))")
+          echo "VERSION=$V" >> "$GITHUB_ENV"
+
+      - name: Portable zip
+        shell: bash
+        run: |
+          mkdir -p out/Monocat
+          git archive HEAD | tar -x -C out/Monocat
+          rm -rf out/Monocat/.github out/Monocat/installer
+          cd out && python -c "import shutil;shutil.make_archive('../Monocat-Portable-$VERSION','zip','.','Monocat')"
+
+      - name: Install build tools
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -r requirements.txt pyinstaller
+          choco install innosetup -y --no-progress
+
+      - name: Download the VLC engine (checked against videolan.org SHA-256)
+        run: python tools/get_vlc.py --yes
+
+      - name: Build Monocat.exe with PyInstaller
+        run: pyinstaller --noconfirm installer/monocat.spec
+
+      - name: Build the Setup
+        run: '& "C:\Program Files (x86)\Inno Setup 6\ISCC.exe" /DAppVersion=$env:VERSION installer\monocat.iss'
+
+      - name: Checksums
+        shell: bash
+        run: |
+          sha256sum Monocat-Portable-$VERSION.zip dist-installer/Monocat-Setup-$VERSION.exe > SHA256SUMS.txt
+          cat SHA256SUMS.txt
+
+      - uses: softprops/action-gh-release@v2
+        if: startsWith(github.ref, 'refs/tags/')
+        with:
+          files: |
+            Monocat-Portable-${{ env.VERSION }}.zip
+            dist-installer/Monocat-Setup-${{ env.VERSION }}.exe
+            SHA256SUMS.txt
+          generate_release_notes: true
+
+      - uses: actions/upload-artifact@v4
+        if: ${{ !startsWith(github.ref, 'refs/tags/') }}
+        with:
+          name: monocat-${{ env.VERSION }}
+          path: |
+            Monocat-Portable-${{ env.VERSION }}.zip
+            dist-installer/Monocat-Setup-${{ env.VERSION }}.exe
