@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="./assets/monocat.png" alt="Monocat logo" width="180" />
+   <img src="./assets/monocat-animated.gif" alt="Monocat logo" width="180" />
 </p>
 
 <h1 align="center">Monocat</h1>
