@@ -10,7 +10,8 @@
   <img alt="PySide6" src="https://img.shields.io/badge/PySide6-Qt_for_Python-000000?logo=qt&logoColor=white">
   <img alt="VLC engine" src="https://img.shields.io/badge/engine-VLC_3.0-000000?logo=vlcmediaplayer&logoColor=white">
   <img alt="Platform" src="https://img.shields.io/badge/platform-Windows_10%2F11-000000?logo=windows&logoColor=white">
-  <img alt="Status" src="https://img.shields.io/badge/status-beta-555555">
+  <img alt="Status" src="https://img.shields.io/badge/status-stable-000000">
+  <img alt="Release" src="https://img.shields.io/github/v/release/arcticfoxcreations/Monocat?color=000000">
   <img alt="License" src="https://img.shields.io/badge/license-MIT-lightgrey">
 </p>
 
